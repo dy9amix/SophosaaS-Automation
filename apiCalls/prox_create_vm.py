@@ -1,14 +1,17 @@
 import requests
+import urllib3
+import json
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def createVM(vmId, client_name, csrfToken, authCookie):
   url = f"https://192.168.4.82:8006/api2/json/nodes/saas/qemu/103/clone?newid={vmId}&name={client_name}&storage=local-lvm&full=1"
 
   payload  = {}
   headers = {
     'CSRFPreventionToken': f'{csrfToken}',
-    'Cookie': f'{authCookie}'
+    'Cookie': f'PVEAuthCookie={authCookie}'
   }
   response = requests.request("POST", url,
                                headers=headers, data = payload,
                                 verify=False)
-  print(response.text.encode('utf8'))
+  return response.text.encode('utf8')

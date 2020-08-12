@@ -7,8 +7,7 @@ from apiCalls.prox_token_generate import generateToken
 from apiCalls.sophos_interface import configureInterface
 from apiCalls.prox_delete_vm import deleteVM
 from apiCalls.listSubscribers import listSubscribers
-
-
+from apiCalls.start_vm import startVM
 app = FastAPI()
 
 class Input(BaseModel):
@@ -29,8 +28,10 @@ def newclient(input: Input):
     token = authData['data']['CSRFPreventionToken']
     ticket = authData['data']['ticket']
     createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=input.Id)
+    startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
     time.sleep(240)
-    configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
+    Interface_result = configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
+    print(Interface_result)
     return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to complete this deployment"}
 
 @app.post("/decommission")

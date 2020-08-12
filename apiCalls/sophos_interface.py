@@ -72,4 +72,4 @@ def configureInterface(lanIP, lanSubnet, wanIP, wanSubnet, wanGateway):
 
     response = requests.request("GET", url, headers=headers, data = payload, verify=False)
 
-    print(response.text.encode('utf8'))
+    return response.text.encode('utf8')
