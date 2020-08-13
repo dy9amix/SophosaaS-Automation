@@ -9,9 +9,8 @@ def deleteVM(token, ticket, vmID):
   payload = {}
   headers = {
     'CSRFPreventionToken': f'{token}',
-    'Cookie': f'{ticket}'
+    'Cookie': f'PVEAuthCookie={ticket}'
   }
 
   response = requests.request("DELETE", url, headers=headers, data = payload, verify=False)
-
-  print(response.text.encode('utf8'))
+  return response.text.encode('utf8')
