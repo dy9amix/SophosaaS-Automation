@@ -28,8 +28,8 @@ def newclient(input: Input):
     token = authData['data']['CSRFPreventionToken']
     ticket = authData['data']['ticket']
     createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=input.Id)
-    startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
     time.sleep(240)
+    startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
     Interface_result = configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
     print(Interface_result)
     return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to complete this deployment"}
