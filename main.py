@@ -23,11 +23,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 fake_users_db = {
-    "johndoe": {
+    "testadmin": {
         "username": "testadmin",
         "full_name": "John Doe",
         "email": "johndoe@example.com",
-        "hashed_password": "$2a$10$HA6bDkzeHwvsg9HwsPY9rOhZuhL0.DVBSbSIRPA6RMe8xG1M.ojO6",
+        "hashed_password": "$2b$12$ffTjmxj6fiSTYaWIuzkH8.Wj6hl.Xj.1aqXvb4dBn6qq53Z9sLusO",
         "disabled": False,
     }
 }
@@ -127,7 +127,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": User.username}, expires_delta=access_token_expires
+        data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
