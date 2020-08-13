@@ -7,7 +7,7 @@ from apiCalls.prox_token_generate import generateToken
 from apiCalls.sophos_interface import configureInterface
 from apiCalls.prox_delete_vm import deleteVM
 from apiCalls.listSubscribers import listSubscribers
-from apiCalls.start_vm import startVM
+from apiCalls.start_vm import startVM, stopVM
 app = FastAPI()
 
 class Input(BaseModel):
@@ -28,7 +28,7 @@ def newclient(input: Input):
     token = authData['data']['CSRFPreventionToken']
     ticket = authData['data']['ticket']
     createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=input.Id)
-    time.sleep(240)
+    time.sleep(180)
     startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
     Interface_result = configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
     print(Interface_result)
@@ -47,5 +47,7 @@ def decommission(inputVal:deleteInput):
     if val == None:
         raise Exception("Subscriber not Found check the name and try again")
     else:
+        stopVM(csrfToken=token, authCookie=ticket, vmId=val)
+        time.sleep(60)
         deleteVM(token=token, ticket=ticket, vmID=val)
     return {"message":"Subscriber successfully deleted"}
