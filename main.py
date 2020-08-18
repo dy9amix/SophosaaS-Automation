@@ -161,6 +161,7 @@ def newclient(input: Input, subscriber_type:subscriberType, token: str = Depends
         createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=input.Id)
         time.sleep(180)
         startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
+        time.sleep(60)
         Interface_result = configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,
                                                 wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
         print(Interface_result)
@@ -186,7 +187,7 @@ def newclient(input: Input, subscriber_type:subscriberType, token: str = Depends
         return {"message" : "Wrong Input at client type"}
 
 @app.post("/decommission")
-def decommission(inputVal:deleteInput):
+def decommission(inputVal:deleteInput, token: str = Depends(oauth2_scheme)):
     val = None
     authData = generateToken()
     token = authData['data']['CSRFPreventionToken']
