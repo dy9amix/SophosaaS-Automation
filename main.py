@@ -150,6 +150,7 @@ class deleteInput(BaseModel):
 
 
 @app.post("/createsubscriber")
+
 def newclient(input: Input, token: str = Depends(oauth2_scheme)):
     vmiD = input.vlan_ID + 100
     authData = generateToken()
@@ -163,6 +164,7 @@ def newclient(input: Input, token: str = Depends(oauth2_scheme)):
                                             wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
     print(Interface_result)
     return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to complete this deployment"}
+
 
 @app.post("/decommission")
 def decommission(inputVal:deleteInput, token: str = Depends(oauth2_scheme)):

@@ -4,7 +4,7 @@ import json
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 def createVM(vmId, client_name, csrfToken, authCookie):
-  url = f"https://192.168.4.82:8006/api2/json/nodes/saas/qemu/103/clone?newid={vmId}&name={client_name}&storage=local-lvm&full=1"
+  url = f"https://192.168.4.82:8006/api2/json/nodes/saas/qemu/103/clone?newid={vmId}&name={client_name}&storage=local-zfs&full=1"
 
   payload  = {}
   headers = {
