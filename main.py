@@ -13,6 +13,7 @@ from apiCalls.sophos_interface import configureInterface, configureInterfacempls
 from apiCalls.prox_delete_vm import deleteVM
 from apiCalls.listSubscribers import listSubscribers
 from apiCalls.start_vm import startVM, stopVM
+from apiCalls.configure_vlan import configure_vlan
 
 app = FastAPI()
 
@@ -136,55 +137,34 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 class Input(BaseModel):
     name: str
-    Id : int
     lanIP: str
     lanSubnet: str
     wanIP: str
     wanSubnet: str
     wanGateway: str
     clientType: str
-    vlan_ID: Optional[float] = None
+    vlan_ID: int
 
 class deleteInput(BaseModel):
     subscriberName: str
 
-class subscriberType(str, Enum):
-    direct = "direct"
-    mpls = "mpls"
 
 @app.post("/createsubscriber")
-def newclient(input: Input, subscriber_type:subscriberType, token: str = Depends(oauth2_scheme)):
-    if input.clientType == subscriber_type.direct:
-        authData = generateToken()
-        token = authData['data']['CSRFPreventionToken']
-        ticket = authData['data']['ticket']
-        createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=input.Id)
-        time.sleep(180)
-        startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
-        time.sleep(60)
-        Interface_result = configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,
-                                                wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
-        print(Interface_result)
-        return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to complete this deployment"}
-    
-    elif input.clientType == subscriber_type.mpls:
-        if input.vlan_ID == None:
-            return {"message":"Please specify a vlan ID"}
-     
-        else:
-            authData = generateToken()
-            token = authData['data']['CSRFPreventionToken']
-            ticket = authData['data']['ticket']
-            createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=input.Id)
-            time.sleep(180)
-            startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
-            Interface_result = configureInterfacempls(lanIP=input.lanIP,lanSubnet=input.lanSubnet,
-                                                            wanIP=input.wanIP,wanSubnet=input.wanSubnet,
-                                                            wanGateway=input.wanGateway, vlanID=input.vlan_ID)
-            print(Interface_result)
-            return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to complete this deployment"}
-    else:
-        return {"message" : "Wrong Input at client type"}
+
+def newclient(input: Input, token: str = Depends(oauth2_scheme)):
+    vmiD = input.vlan_ID + 100
+    authData = generateToken()
+    token = authData['data']['CSRFPreventionToken']
+    ticket = authData['data']['ticket']
+    createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=vmiD)
+    time.sleep(180)
+    configure_vlan(vmID=vmiD, vlan=input.vlan_ID)
+    startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
+    Interface_result = configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,
+                                            wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
+    print(Interface_result)
+    return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to complete this deployment"}
+
 
 @app.post("/decommission")
 def decommission(inputVal:deleteInput, token: str = Depends(oauth2_scheme)):
