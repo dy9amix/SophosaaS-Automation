@@ -2,6 +2,7 @@ import time
 from datetime import datetime, timedelta
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -9,13 +10,27 @@ from pydantic import BaseModel
 from enum import Enum
 from apiCalls.prox_create_vm import createVM
 from apiCalls.prox_token_generate import generateToken
-from apiCalls.sophos_interface import configureInterface, configureInterfacempls
+from apiCalls.sophos_interface import configureInterface
 from apiCalls.prox_delete_vm import deleteVM
 from apiCalls.listSubscribers import listSubscribers
 from apiCalls.start_vm import startVM, stopVM
 from apiCalls.configure_vlan import configure_vlan
 
 app = FastAPI()
+
+################CORS###############################
+origins = [
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+###################################################
 
 #############Authentication Script#################
 SECRET_KEY = "625712595e6a626d28899169059330437e354daada28067281922d90120fb0bb"
@@ -142,7 +157,6 @@ class Input(BaseModel):
     wanIP: str
     wanSubnet: str
     wanGateway: str
-    clientType: str
     vlan_ID: int
 
 class deleteInput(BaseModel):
@@ -150,20 +164,22 @@ class deleteInput(BaseModel):
 
 
 @app.post("/createsubscriber")
-
 def newclient(input: Input, token: str = Depends(oauth2_scheme)):
     vmiD = input.vlan_ID + 100
     authData = generateToken()
     token = authData['data']['CSRFPreventionToken']
     ticket = authData['data']['ticket']
     createVM(csrfToken=token, authCookie=ticket, client_name=input.name, vmId=vmiD)
-    time.sleep(180)
+    time.sleep(140)
     configure_vlan(vmID=vmiD, vlan=input.vlan_ID)
-    startVM(csrfToken=token, authCookie=ticket, vmId=input.Id)
+    time.sleep(60)
+    startVM(csrfToken=token, authCookie=ticket, vmId=vmiD)
+    time.sleep(120)
+    print('LAN:',input.lanIP,'LAN')
     Interface_result = configureInterface(lanIP=input.lanIP,lanSubnet=input.lanSubnet,
                                             wanIP=input.wanIP,wanSubnet=input.wanSubnet,wanGateway=input.wanGateway)
     print(Interface_result)
-    return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to complete this deployment"}
+    return {"message" : f"Deployment complete. Please open https://{input.lanIP}:4444 to register this subscriber"}
 
 
 @app.post("/decommission")
